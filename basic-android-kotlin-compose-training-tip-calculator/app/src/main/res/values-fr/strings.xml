@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="calculate_tip">Calculater le pourboire</string>
+    <string name="bill_amount">Montant de la facture</string>
+    <string name="tip_amount">Montant du pourboire: %s</string>
+</resources>
