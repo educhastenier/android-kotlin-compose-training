@@ -4,4 +4,6 @@
     <string name="calculate_tip">Calculater le pourboire</string>
     <string name="bill_amount">Montant de la facture</string>
     <string name="tip_amount">Montant du pourboire: %s</string>
+    <string name="how_was_the_service">Pourcentage de pourboire</string>
+    <string name="round_up_tip">Arrondir le pourboire?</string>
 </resources>
