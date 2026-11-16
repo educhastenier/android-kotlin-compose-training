@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -21,10 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.artspacegallery.ui.theme.ArtSpaceGalleryTheme
+import kotlinx.coroutines.launch
 
 data class ArtPiece(
     val imageResId: Int,
@@ -54,10 +55,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ArtSpaceGalleryTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ArtSpaceGalleryApp(
-//                        Modifier.fillMaxSize()
-//                            .wrapContentSize(Alignment.Center)
-                    )
+                    ArtSpaceGalleryApp()
                 }
             }
         }
@@ -66,53 +64,66 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ArtSpaceGalleryApp(modifier: Modifier = Modifier) {
-    var currentIndex by remember { mutableIntStateOf(0) }
-    val currentArtPiece = artPieces[currentIndex]
+    val pagerState = rememberPagerState(pageCount = { artPieces.size })
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
             .safeDrawingPadding()
-//            .border(1.dp, Color.Red)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(currentArtPiece.imageResId),
-                contentDescription = currentArtPiece.title,
-                modifier = Modifier.border(
-                    BorderStroke(2.dp, Color.LightGray),
-                    shape = RoundedCornerShape(10)
-                )
-            )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth()
+        ) { page ->
+            val artPiece = artPieces[page]
             Column(
-                modifier = Modifier,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = stringResource(R.string.app_name))
-                Text(text = currentArtPiece.title)
+                Image(
+                    painter = painterResource(artPiece.imageResId),
+                    contentDescription = artPiece.title,
+                    modifier = Modifier.border(
+                        BorderStroke(2.dp, Color.LightGray),
+                        shape = RoundedCornerShape(10)
+                    )
+                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(R.string.app_name))
+                    Text(text = artPiece.title)
+                }
             }
         }
+
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(onClick = {
-                currentIndex = (currentIndex - 1 + artPieces.size) % artPieces.size
+                coroutineScope.launch {
+                    val prevPage = (pagerState.currentPage - 1 + artPieces.size) % artPieces.size
+                    pagerState.animateScrollToPage(prevPage)
+                }
             }) {
                 Text(text = "Previous")
             }
             Button(onClick = {
-                currentIndex = (currentIndex + 1) % artPieces.size
+                coroutineScope.launch {
+                    val nextPage = (pagerState.currentPage + 1) % artPieces.size
+                    pagerState.animateScrollToPage(nextPage)
+                }
             }) {
                 Text(text = "Next")
             }
